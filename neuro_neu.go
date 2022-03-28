@@ -131,19 +131,34 @@ func zufallszahl() int {
 	return (rand.Intn(max-min+1) + min)
 }
 
-/*
-func trainieren_backpropagation(input_daten mnistLoad.Datensatz, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen int, w1, w2, w3 mat.Dense, b1, b2, b3 mat.Dense, learningrate float64) {
+// nur backpropagation. Rueckgabe der werte mit eingerechneten Fehler von output bis input
+func backpropagation(input_daten mnistLoad.Datensatz, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen int, w1, w2, w3 mat.Dense, b1, b2, b3 mat.Dense, learningrate float64) {
 	output_ein_durchlauf,hidden1output, hidden2output := durchlauf_fuer_ein_bild(input_daten, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen, w1, w2, w3, b1, b2, b3)
 	fehler_vektor_aktueller_durchlauf := fehler_berechnen(input_daten, output_ein_durchlauf, index)
 	var c mat.Dense
-	dw2 := 1/ learningrate * c.Mul(&fehler_vektor_aktueller_durchlauf,hidden2output)
-	db2 := 1/ learning_rate
+	dw3 := 1/  c.Mul(&fehler_vektor_aktueller_durchlauf,hidden2output)
+	dw2 :=
+	dw1 :=
+	db1 :=
+	db2 :=
+	db3 :=
 }
 
 func update_parameter(w1, w2, w3, dw1, dw2, dw3 mat.Dense, b1, b2, b3, db1, db2, db3 mat.VecDense, learningrate float64) (mat.Dense, mat.Dense, mat.Dense, mat.VecDense, mat.VecDense, mat.VecDense) {
+w1 = w1.sub(learningrate *(w1,dw1))
+w2 = w2.sub(learningrate *(w2,dw2))
+w3 = w3.sub(learningrate *(w3,dw3))
+
+b1 = b1.sub(learningrate *(b1,db1))
+b2 = b2.sub(learningrate *(b2,db2))
+b3 = b3.sub(learningrate *(b3,db3))
+return w1,w2,w3,b1,b2,b3
+}
+// hier sollen die schritte zusammengefuehrt werden um das Netz zu trainieren
+func trainieren(){
 
 }
-*/
+
 func main() {
 	var path = "/Users/eugen/coding/lwb/mnistzip"
 	var trainingSet, _ mnistLoad.Datensatz = mnistLoad.Laden(path)
