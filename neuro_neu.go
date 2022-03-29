@@ -1,15 +1,18 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
-	"neuronetz/mnistLoad"
+
+	"github.com/eugmal/swp/mnistLoad"
 
 	"math"
 
 	"time"
 
 	"github.com/moverest/mnist"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -40,6 +43,8 @@ func bild_in_inputLayer(input_daten mnistLoad.Datensatz, index int) mat.Dense {
 		data[i] = input_daten.Bilder[index][i]
 	}
 	a := mat.NewDense((len(input_daten.Bilder[index])), 1, data)
+	//bild muss wahrscheinlich zur multiplikation in einer Zeile abgebildet sein. Aber nicht ganz sicher. Ist ein Versuch.
+	a.T()
 	return *a
 }
 
@@ -87,8 +92,9 @@ func sigmoid_funktion(x float64) float64 {
 }
 
 // um bei backpropagation die sigmoid aktivierung rauszurechnen
-func sigmoid_prime(x float64) float64 {
-	return sigmoid_funktion(x) * (1.0 - sigmoid_funktion(x))
+
+func sigmoidPrime(x float64) float64 {
+	return x * (1.0 - x)
 }
 
 //prediction fuer ein bild
@@ -100,7 +106,7 @@ func durchlauf_fuer_ein_bild(input_daten mnistLoad.Datensatz, index, inputNeuron
 	return final_out, out_HiddenLayer1, out_HiddenLayer2
 }
 
-func fehler_berechnen(label mnistLoad.Datensatz, OutputVektor mat.VecDense, index int) mat.Dense {
+func fehler_berechnen(label mnistLoad.Datensatz, OutputVektor mat.Dense, index int) mat.Dense {
 	akt_label := label.Labels[index]
 	var richtige_antwort [10]float64
 	richtige_antwort[akt_label] = 1
@@ -131,31 +137,108 @@ func zufallszahl() int {
 	return (rand.Intn(max-min+1) + min)
 }
 
-// nur backpropagation. Rueckgabe der werte mit eingerechneten Fehler von output bis input
+//  backpropagation. Rueckgabe der neuen weights und biases nach einem durchlauf
 func backpropagation(input_daten mnistLoad.Datensatz, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen int, w1, w2, w3 mat.Dense, b1, b2, b3 mat.Dense, learningrate float64) {
-	output_ein_durchlauf,hidden1output, hidden2output := durchlauf_fuer_ein_bild(input_daten, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen, w1, w2, w3, b1, b2, b3)
+	output_ein_durchlauf, hidden1output, hidden2output := durchlauf_fuer_ein_bild(input_daten, index, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen, w1, w2, w3, b1, b2, b3)
 	fehler_vektor_aktueller_durchlauf := fehler_berechnen(input_daten, output_ein_durchlauf, index)
-	var c mat.Dense
-	dw3 := 1/  c.Mul(&fehler_vektor_aktueller_durchlauf,hidden2output)
-	dw2 :=
-	dw1 :=
-	db1 :=
-	db2 :=
-	db3 :=
+	applySigmoidPrime := func(_, _ int, v float64) float64 { return sigmoidPrime(v) }
+	slopeOutputLayer := mat.NewDense(0, 0, nil)
+	slopeOutputLayer.Apply(applySigmoidPrime, &output_ein_durchlauf)
+	slopeHidden2Layer := mat.NewDense(0, 0, nil)
+	slopeHidden2Layer.Apply(applySigmoidPrime, &hidden2output)
+	slopeHidden1Layer := mat.NewDense(0, 0, nil)
+	slopeHidden1Layer.Apply(applySigmoidPrime, &hidden1output)
+
+	dOutput := mat.NewDense(0, 0, nil)
+	dOutput.MulElem(&fehler_vektor_aktueller_durchlauf, slopeOutputLayer)
+
+	errorAtH2Layer := mat.NewDense(0, 0, nil)
+	errorAtH2Layer.Mul(dOutput, w3.T())
+
+	dHidden2Layer := mat.NewDense(0, 0, nil)
+	dHidden2Layer.MulElem(errorAtH2Layer, slopeHidden2Layer)
+
+	errorAtH1Layer := mat.NewDense(0, 0, nil)
+	errorAtH1Layer.Mul(dHidden2Layer, w2.T())
+
+	dHidden1Layer := mat.NewDense(0, 0, nil)
+	dHidden1Layer.MulElem(errorAtH1Layer, slopeHidden1Layer)
+
+	// anpassen der parameter w und b
+	wOutAdj := mat.NewDense(0, 0, nil)
+	wOutAdj.Mul(hidden2output.T(), dOutput)
+	wOutAdj.Scale(learningrate, wOutAdj)
+	w3.Add(&w3, wOutAdj)
+
+	bOutAdj, err := sumAlongAxis(0, dOutput)
+	if err != nil {
+		return
+	}
+	bOutAdj.Scale(learningrate, bOutAdj)
+	b3.Add(&b3, bOutAdj)
+
+	wHidden2Adj := mat.NewDense(0, 0, nil)
+	wHidden2Adj.Mul(hidden1output.T(), dHidden2Layer)
+	wHidden2Adj.Scale(learningrate, wHidden2Adj)
+	w2.Add(&w2, wHidden2Adj)
+
+	bHidden2Adj, err := sumAlongAxis(0, dHidden2Layer)
+	if err != nil {
+		return
+	}
+	bHidden2Adj.Scale(learningrate, bHidden2Adj)
+	b2.Add(&b2, bHidden2Adj)
+
+	output_vom_input_layer := bild_in_inputLayer(input_daten, index)
+	wHidden1Adj := mat.NewDense(0, 0, nil)
+	wHidden1Adj.Mul(output_vom_input_layer.T(), dHidden1Layer)
+	wHidden1Adj.Scale(learningrate, wHidden1Adj)
+	w1.Add(&w1, wHidden1Adj)
+
+	bHidden1Adj, err := sumAlongAxis(0, dHidden1Layer)
+	if err != nil {
+		return
+	}
+	bHidden1Adj.Scale(learningrate, bHidden1Adj)
+	b1.Add(&b1, bHidden1Adj)
+
+	//return w1,w2,w3,b1,b2,b3
+
 }
 
-func update_parameter(w1, w2, w3, dw1, dw2, dw3 mat.Dense, b1, b2, b3, db1, db2, db3 mat.VecDense, learningrate float64) (mat.Dense, mat.Dense, mat.Dense, mat.VecDense, mat.VecDense, mat.VecDense) {
-w1 = w1.sub(learningrate *(w1,dw1))
-w2 = w2.sub(learningrate *(w2,dw2))
-w3 = w3.sub(learningrate *(w3,dw3))
+func sumAlongAxis(axis int, m *mat.Dense) (*mat.Dense, error) {
+	numRows, numCols := m.Dims()
 
-b1 = b1.sub(learningrate *(b1,db1))
-b2 = b2.sub(learningrate *(b2,db2))
-b3 = b3.sub(learningrate *(b3,db3))
-return w1,w2,w3,b1,b2,b3
+	var output *mat.Dense
+	switch axis {
+	case 0:
+		data := make([]float64, numCols)
+		for i := 0; i < numCols; i++ {
+			col := mat.Col(nil, i, m)
+			data[i] = floats.Sum(col)
+		}
+		output = mat.NewDense(1, numCols, data)
+	case 1:
+		data := make([]float64, numRows)
+		for i := 0; i < numRows; i++ {
+			row := mat.Row(nil, i, m)
+			data[i] = floats.Sum(row)
+		}
+		output = mat.NewDense(numRows, 1, data)
+	default:
+		return nil, errors.New("invalid axis, must be 0 or 1")
+	}
+	return output, nil
 }
+
 // hier sollen die schritte zusammengefuehrt werden um das Netz zu trainieren
-func trainieren(){
+
+func trainieren(input_daten mnistLoad.Datensatz, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen int, w1, w2, w3 mat.Dense, b1, b2, b3 mat.Dense, learningrate float64) {
+	//erstmal eine Zahl(20000) fuer die Menge der Durchlaeufe. Spaeter aendern.
+	for i := 0; i < 20000; i++ {
+		backpropagation(input_daten, i, inputNeuronen, h1Neuronen, h2Neuronen, outNeuronen, w1, w2, w3, b1, b2, b3, learningrate)
+
+	}
 
 }
 
@@ -188,7 +271,10 @@ func main() {
 	//input_fuer_fehler := durchlauf_fuer_ein_bild(trainingSet, index, input.neuronen, hidden1.neuronen, hidden2.neuronen, output.neuronen, hidden1.weights_matrix, hidden2.
 	//weights_matrix, output.weights_matrix, hidden1.biases, hidden2.biases, output.biases)
 	//fmt.Println(fehler_berechnen(trainingSet, input_fuer_fehler, index))
-	miniBatch := mini_batch(trainingSet)
-	fmt.Println(miniBatch)
+	fmt.Println("Weights hidden1 vor Training: ")
+	fmt.Println(hidden1.weights_matrix)
+	trainieren(trainingSet, input.neuronen, hidden1.neuronen, hidden2.neuronen, output.neuronen, hidden1.weights_matrix, hidden2.weights_matrix, output.weights_matrix, hidden1.biases, hidden2.biases, output.biases, 0.2)
+	fmt.Println("weights hidden1 nach training:")
+	fmt.Println(hidden1.weights_matrix)
 
 }
