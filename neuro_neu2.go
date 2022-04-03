@@ -86,6 +86,24 @@ func createGeneralLayerOutput(input, weights_matrix, bias_matrix *mat.Dense, anz
 	return output_sigmoid
 }
 
+/*
+to do:
+
+funktion, die den ganzen durchlauf von bild-input bis final-Output macht.
+funktion zum berechnen des Fehlers
+backpropagation zum updaten der weights und biases
+
+funktion, die diese Schritte vereint und nacheinander fuer jedes Bild durchlaeuft.
+output berechnen --> fehler berechnen --> weights und biases anpassen --> fuer naechstes Bild mit den angepassten weights und biases den Vorgang wiederholen
+
+---- eventuell nicht fuer einzelne Bilder, sondern Minibatches......
+---- loss funktion muss gewaehlt werden. (wahrscheinlich mean spuare)
+---- ableitungen und Steigungen berechnen fuer backpropagation
+
+am Ende muss das trainierte Netz gespeichert werden.
+Dann anhand dieses gespeicherten Netzes und den Testdaten die genauigkeit des Netzes messen.
+*/
+
 func main() {
 	//--------------------------------------------------------------
 	// bestimmen der Layer-Variablen
