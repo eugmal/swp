@@ -85,6 +85,28 @@ func createGeneralLayerOutput(input, weights_matrix, bias_matrix *mat.Dense, anz
 	output_sigmoid.Apply(applySigmoid, output_bias)
 	return output_sigmoid
 }
+func durchlaufFuerEinBild(input, w1, w2, w3, b1, b2, b3 *mat.Dense) mat.Dense {
+	outputLayerH1 := create1HiddenLayerOutput(input, w1, b1, 16)
+	outputLayerH2 := createGeneralLayerOutput(outputLayerH1, w2, b2, 16)
+	finalOutput := createGeneralLayerOutput(outputLayerH2, w3, b3, 10)
+	return *finalOutput
+
+}
+
+func durchlaufFuerDatensatz(datensatz mnistLoad.Datensatz, w1, w2, w3, b1, b2, b3 *mat.Dense) {
+	for i := 0; i < len(datensatz.Bilder); i++ {
+		aktuellesBild := datensatz.Bilder[i]
+		dataBild := make([]float64, len(aktuellesBild))
+		for i := range aktuellesBild {
+			dataBild[i] = aktuellesBild[i]
+		}
+		bildMatrix := mat.NewDense(28*28, 1, dataBild)
+		output := durchlaufFuerEinBild(bildMatrix, w1, w2, w3, b1, b2, b3)
+		fmt.Println(output)
+		fmt.Println("Anzahl der durchlaeufe:")
+		fmt.Println(i)
+	}
+}
 
 /*
 to do:
@@ -139,8 +161,10 @@ func main() {
 	// laden der datensets
 	trainingData, _ := mnistLoad.Laden("/Users/eugen/coding/lwb/mnistzip")
 
+	durchlaufFuerDatensatz(trainingData, &hidden1.weights_matrix, &hidden2.weights_matrix, &output_final.weights_matrix, &hidden1.biases, &hidden2.biases, &output_final.biases)
+
 	// --------------------------------------------------------------
-	fmt.Println(trainingData.Bilder[1])
+	/*fmt.Println(trainingData.Bilder[1])
 	//fmt.Println(trainingData.Labels[1])
 	einBild_Bild := trainingData.Bilder[1]
 	dataBild := make([]float64, len(einBild_Bild))
@@ -156,4 +180,5 @@ func main() {
 	output_layerH2 := createGeneralLayerOutput(output_layerH1, &hidden2.weights_matrix, &hidden2.biases, 16)
 
 	fmt.Println(createGeneralLayerOutput(output_layerH2, &output_final.weights_matrix, &output_final.biases, 10))
+	*/
 }
