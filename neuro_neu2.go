@@ -104,6 +104,14 @@ am Ende muss das trainierte Netz gespeichert werden.
 Dann anhand dieses gespeicherten Netzes und den Testdaten die genauigkeit des Netzes messen.
 */
 
+//funktion zum generieren der LabelMatrix. der wert des Labels im entsprechenden Index des datensatzes.Label ist der Index der Outputmatrix dessen Wert auf 1 gesetzt wird. Alle anderen //Werte sind 0.
+//func generiereLabelMatrix(labelDaten mnistLoad.Datensatz, index int) mat.Dense{
+//	}
+
+//loss funktion "mean squared error"
+//func meanSquaredError(outputMatrix, labelMatrix mat.Dense ) float64{
+//}
+
 func main() {
 	//--------------------------------------------------------------
 	// bestimmen der Layer-Variablen
