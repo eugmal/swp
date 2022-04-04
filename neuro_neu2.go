@@ -164,21 +164,5 @@ func main() {
 	durchlaufFuerDatensatz(trainingData, &hidden1.weights_matrix, &hidden2.weights_matrix, &output_final.weights_matrix, &hidden1.biases, &hidden2.biases, &output_final.biases)
 
 	// --------------------------------------------------------------
-	/*fmt.Println(trainingData.Bilder[1])
-	//fmt.Println(trainingData.Labels[1])
-	einBild_Bild := trainingData.Bilder[1]
-	dataBild := make([]float64, len(einBild_Bild))
-	for i := range einBild_Bild {
-		dataBild[i] = einBild_Bild[i]
-	}
 
-	einBild := mat.NewDense(28*28, 1, dataBild)
-	fmt.Println(einBild)
-	output_layerH1 := create1HiddenLayerOutput(einBild, &hidden1.weights_matrix, &hidden1.biases, 16)
-
-	//fmt.Println(create1HiddenLayerOutput(einBild, &hidden1.weights_matrix, &hidden1.biases, 16))
-	output_layerH2 := createGeneralLayerOutput(output_layerH1, &hidden2.weights_matrix, &hidden2.biases, 16)
-
-	fmt.Println(createGeneralLayerOutput(output_layerH2, &output_final.weights_matrix, &output_final.biases, 10))
-	*/
 }
