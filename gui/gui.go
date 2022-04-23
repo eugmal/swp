@@ -76,6 +76,7 @@ func gibBildMatrix(bildArray [28][28]float64) *mat.Dense {
 	for i := 0; i < 28; i++ {
 		for j := 0; j < 28; j++ {
 			bildSlice[index] = bildArray[i][j]
+			index++
 		}
 	}
 	bildMatrix := mat.NewDense(784, 1, bildSlice)
