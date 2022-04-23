@@ -232,11 +232,13 @@ func GewichteLaden(speicherort string) (*mat.Dense, *mat.Dense) {
 	weight1, err := os.Open(speicherort + "/w1")
 	defer weight1.Close()
 	if err == nil {
+		w1.Reset()
 		w1.UnmarshalBinaryFrom(weight1)
 	}
 	w2 := mat.NewDense(10, 20, nil)
 	weights2, err := os.Open(speicherort + "/w2")
 	if err == nil {
+		w2.Reset()
 		w2.UnmarshalBinaryFrom(weights2)
 	}
 	return w1, w2
