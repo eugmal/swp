@@ -199,7 +199,7 @@ func Testing(testSet mnistLoad.DatensatzSlices, w1, w2 mat.Dense) (int, float64)
 }
 
 func Vorhersage(x, w1, w2 mat.Dense) int {
-	_, _, _, vorhersage := Forward(*&x, w1, w2)
+	_, _, _, vorhersage := Forward(x, w1, w2)
 	var vorhersageIndex int
 	max := 0.0
 	for j := 0; j < 10; j++ {
