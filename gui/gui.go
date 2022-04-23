@@ -52,14 +52,13 @@ func bildSkalieren(bildOriginal [560][560]uint16) [28][28]float64 {
 			summe := 0
 			for y := x; y < x+20; y++ {
 				for j := i; j < i+20; j++ {
-					summe = summe + int(bildOriginal[y][j])
+					summe = summe + int(bildOriginal[j][y]) //bilder sind spaltenweise angeordnet nicht zeilenweise!
 				}
 			}
-			//fmt.Println(summe)
-			summeScaled := float64(summe) / (20.0 * 20.0)
+
+			summeScaled := (float64(summe) / (20.0 * 20.0))
 			bildScaled[row][col] = summeScaled
-			fmt.Println("wert: ", bildScaled[row][col])
-			fmt.Println("array: ", bildScaled)
+
 			i = i + 20
 			col++
 		}
@@ -80,6 +79,7 @@ func gibBildMatrix(bildArray [28][28]float64) *mat.Dense {
 		}
 	}
 	bildMatrix := mat.NewDense(784, 1, bildSlice)
+
 	return bildMatrix
 
 }
@@ -109,7 +109,7 @@ func ZahlMalen() *mat.Dense {
 	}
 	gfx.TastaturLesen1()
 	zahlMatrix := gibBildMatrix(bildScale)
-	fmt.Println(zahlMatrix)
+
 	return zahlMatrix
 
 }
