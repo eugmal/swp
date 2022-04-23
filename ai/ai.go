@@ -3,6 +3,7 @@ package ai
 import (
 	"fmt"
 	"math"
+	"os"
 
 	"github.com/eugmal/swp/mnistLoad"
 	"gonum.org/v1/gonum/mat"
@@ -211,4 +212,32 @@ func Vorhersage(x, w1, w2 mat.Dense) int {
 	}
 	return vorhersageIndex
 
+}
+
+func GewichteSpeichern(w1, w2 mat.Dense, speicherort string) {
+	weight1, err := os.Create(speicherort + "/w1")
+	defer weight1.Close()
+	if err == nil {
+		w1.MarshalBinaryTo(weight1)
+	}
+	weight2, err := os.Create(speicherort + "/w2")
+	defer weight2.Close()
+	if err == nil {
+		w2.MarshalBinaryTo(weight2)
+	}
+
+}
+func GewichteLaden(speicherort string) (*mat.Dense, *mat.Dense) {
+	w1 := mat.NewDense(20, 784, nil)
+	weight1, err := os.Open(speicherort + "/w1")
+	defer weight1.Close()
+	if err == nil {
+		w1.UnmarshalBinaryFrom(weight1)
+	}
+	w2 := mat.NewDense(10, 20, nil)
+	weights2, err := os.Open(speicherort + "/w2")
+	if err == nil {
+		w2.UnmarshalBinaryFrom(weights2)
+	}
+	return w1, w2
 }
