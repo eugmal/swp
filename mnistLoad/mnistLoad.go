@@ -12,6 +12,10 @@ type Datensatz struct {
 	Bilder []Bild
 	Labels []mnist.Label
 }
+type DatensatzSlices struct {
+	Bilder [][]float64
+	Labels []mnist.Label
+}
 
 func Laden(path string) (Datensatz, Datensatz) {
 	var trainingsDatensatz Datensatz
@@ -37,7 +41,40 @@ func Laden(path string) (Datensatz, Datensatz) {
 		}
 
 	}
+	trainingsDatensatz.Labels = train.Labels
+	testDatensatz.Labels = test.Labels
 
+	return trainingsDatensatz, testDatensatz
+
+}
+
+//Laed Bilder als []float64 statt Type Bild (einfacher fuer Verarbeitung)
+func LadenSlice(path string) (DatensatzSlices, DatensatzSlices) {
+	var trainingsDatensatz DatensatzSlices
+	var testDatensatz DatensatzSlices
+	trainingsDatensatz.Bilder = make([][]float64, 60000)
+	testDatensatz.Bilder = make([][]float64, 10000)
+	train, test, _ := mnist.Load(path)
+
+	for i := 0; i < len(train.Images); i++ {
+		neuesBild := train.Images[i]
+		trainingsDatensatz.Bilder[i] = make([]float64, 784)
+		for j := 0; j < (weite * hoehe); j++ {
+			trainingsDatensatz.Bilder[i][j] = (float64(neuesBild[j]) / 255.)
+
+		}
+
+	}
+
+	for i := 0; i < len(test.Images); i++ {
+		neuesBild := test.Images[i]
+		testDatensatz.Bilder[i] = make([]float64, 784)
+		for j := 0; j < (weite * hoehe); j++ {
+			testDatensatz.Bilder[i][j] = (float64(neuesBild[j]) / 255.)
+
+		}
+
+	}
 	trainingsDatensatz.Labels = train.Labels
 	testDatensatz.Labels = test.Labels
 
