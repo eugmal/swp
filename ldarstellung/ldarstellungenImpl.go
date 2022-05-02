@@ -71,7 +71,6 @@ func Darstellen (slice []float64) {  					//für die gfx Darstellung eines Binä
 	gfx.Fenster(vergroesserung*28,vergroesserung*28)
 }
 	for _,w:=range slice {
-
 			switch  {
 			case w == 4.0: gfx.Stiftfarbe (255,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
 			case w == 3.0: gfx.Stiftfarbe (180,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)

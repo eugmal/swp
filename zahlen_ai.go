@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/eugmal/swp/ai"
 	"github.com/eugmal/swp/gui"
 	"github.com/eugmal/swp/mnistLoad"
