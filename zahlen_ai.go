@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/eugmal/swp/ai"
 	"github.com/eugmal/swp/gui"
 	"github.com/eugmal/swp/mnistLoad"
@@ -19,7 +20,7 @@ func main() {
 		fmt.Println("Gib den Pfad an, an dem du die mnist Daten hast(von der original Seite verpackt und alle 4 Dateien in einem Ordner): ")
 		fmt.Scanln(&pathData)
 		fmt.Println("Das Netz wird jetzt trainiert. Dies kann einige Minuten dauern. Einfach warten.")
-		trainSet, _ := mnistLoad.LadenSlice(pathData)
+		trainSet, _ := mnistLoad.Laden(pathData)
 		w1neu, w2neu := ai.GradientDescendFull(trainSet, 5, 0.1)
 		fmt.Println("Das Netz ist trainiert. Gib jetzt den Pfad ein, am dem die tranierten Gewichte gespeichert werden sollen (der Ordner sollte vor der Eingabe angelegt werden): ")
 		fmt.Scanln(&path)
