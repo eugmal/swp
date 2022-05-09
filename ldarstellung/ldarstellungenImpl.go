@@ -12,18 +12,17 @@ import (
 	//"github.com/petjanzen/lmodelle"
 )
 
-
-//const flip float64 = 0.0167  // Konstante frei wählbar. Hier gewählt nach Auswertung des data.w-Slices
 const vergroesserung uint16 = 20 //Vergößert die 28*28-Pixel Bilder
-var aPositiv, bPositiv, cPositiv, dPositiv, aNegativ, bNegativ, cNegativ, dNegativ float64
+var aPositiv, bPositiv, cPositiv, dPositiv, aNegativ, bNegativ, cNegativ, dNegativ float64 //Variablen für Kategorisiereung der Werte im Slice
 
 
 
-func Umwandeln (slice []float64, bWert float64) ([]float64){
+func NeuronDarstellen (slice []float64, bWert float64) {
 	var erg []float64 = make ([]float64,len(slice))  //Variable für das Ergebnis erstellen
+	fmt.Println(slice)
+	//Maximum und Minimum herausfinden
 	var min, max float64
 	
-	//Maximum und Minimum rausfinden
 	for _,w:= range slice {
 		w=w-bWert //hier wird der bWert (bias) neutralisiert, um die Daten nicht zu verfälschen
 		if w > max {
@@ -32,6 +31,7 @@ func Umwandeln (slice []float64, bWert float64) ([]float64){
 			min=w
 		}
 	}
+	//Minimum und Maximum werden als Grenzwerte genutzt, um die Abstufung in fünf verschie. Farbtönen im gfx-Fenster anzeigen zu können.
 	fmt.Println ("das ist max und min", max, min)
 	aPositiv=max*0.8
 	bPositiv=max*0.6
@@ -42,69 +42,62 @@ func Umwandeln (slice []float64, bWert float64) ([]float64){
 	cNegativ=min*0.6
 	dNegativ=min*0.8
 
-	
+	//Die Werte werden umgewandelt und in einen Ergebnis-Slice (erg) eingetragen.
+	//Die ursprügnlichen Werte werden demnach in 10 verschiedene (5x positive, 5x negative) Abstufungen sortiert.
+	//Diese werden im Ergebnis-Slice festgehalten indem nur die Werte 5.0, 4.0 ...-4.0, -5.0 eingetragen werden
 	for i,w := range slice {
 		w=w-bWert //hier wird der bWert (bias) neutralisiert, um die Daten nicht zu verfälschen
-		//fmt.Println (w)
+		fmt.Println ("DAs ist w: ", w)
 		switch  {
 			case w == 0.0: erg[i]=0.0
-			case w > aPositiv: erg[i]=4.0
-			case w > bPositiv: erg[i]=3.0
-			case w > cPositiv: erg[i]=2.0
-			case w > dPositiv: erg[i]=1.0
+			case w > aPositiv: erg[i]=5.0
+			case w > bPositiv: erg[i]=4.0
+			case w > cPositiv: erg[i]=3.0
+			case w > dPositiv: erg[i]=2.0
+			case w > 0.0 && w<dPositiv: erg[i]=1.0
 			case w > aNegativ: erg[i]=-1.0
 			case w > bNegativ: erg[i]=-2.0
 			case w > cNegativ: erg[i]=-3.0
 			case w > dNegativ: erg[i]=-4.0
+			default			 : erg[i]=-5.0
 		}
 			
 	}
-	//fmt.Println ("das ist der neue Slice", erg)
-	return erg //Also: Daten als Binärcode in einem Slice vorhanden
-}
-
-
-func Darstellen (slice []float64) {  					//für die gfx Darstellung eines Binärcode-Slices
-	var x,y uint16 									//Koordinaten für den linken oberen Punkt des Quadrats
-
+	fmt.Println ("das ist der neue Slice", erg)
+	
 	if !gfx.FensterOffen() {
 	gfx.Fenster(vergroesserung*28,vergroesserung*28)
 }
-	for _,w:=range slice {
+	var x,y uint16 //Koordinaten für den linken oberen Punkt des Quadrats
+	//Je nach Ausprägung der Werte im Ergebnis-Slice werden jetzt farbige Quadrate im gfx-Fenster angezeigt.
+	//hohe positive Werte werden dunkelblau, hohe negative Werte dunkelrot angezeigt.
+	
+	for _,w:=range erg {
 			switch  {
-			case w == 4.0: gfx.Stiftfarbe (255,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == 3.0: gfx.Stiftfarbe (180,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == 2.0: gfx.Stiftfarbe (120,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == 1.0: gfx.Stiftfarbe (70,0,0);		gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == -1.0: gfx.Stiftfarbe (0,0,255);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == -2.0: gfx.Stiftfarbe (0,0,180);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == -3.0: gfx.Stiftfarbe (0,0,120);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
-			case w == -4.0: gfx.Stiftfarbe (0,0,20);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == 5.0: gfx.Stiftfarbe (70,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)	
+			case w == 4.0: gfx.Stiftfarbe (100,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == 3.0: gfx.Stiftfarbe (150,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == 2.0: gfx.Stiftfarbe (255,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == 1.0: gfx.Stiftfarbe (255,100,0);		gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == -1.0: gfx.Stiftfarbe (0,100,255);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == -2.0: gfx.Stiftfarbe (0,0,255);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == -3.0: gfx.Stiftfarbe (0,0,150);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == -4.0: gfx.Stiftfarbe (0,0,100);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
+			case w == -5.0: gfx.Stiftfarbe (70,0,0);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)
 			default: 		gfx.Stiftfarbe (255,255,255);	gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)	
 		}
 		x = (x+vergroesserung) % (28*vergroesserung)  //Neusetzung von x
 		if x == 0 {									//Wenn Zeilenumsprung...
-		y = (y+vergroesserung) 					//...Neusetzung von
+		y = (y+vergroesserung) 					//...Neusetzung von y
 	}
-		
-		
-		/*
-		if w==1 {  									//Wenn 1 ausgelesen wird, zeichne Quardat mit Seitenlänge vergroesserung in schwarz
-			gfx.Stiftfarbe (0,0,0)
-			gfx.Vollrechteck (x,y, vergroesserung, vergroesserung)	
-		} else if w==0{  							//Wenn 0 ausgelesen wird, zeichne Quardat mit Seitenlänge vergroesserung in türkis
-			gfx.Stiftfarbe (0,255,255)
-			gfx.Vollrechteck (x,y, vergroesserung,vergroesserung)
-		} else if w==2{  							//Wenn 0 ausgelesen wird, zeichne Quardat mit Seitenlänge vergroesserung in türkis
-			gfx.Stiftfarbe (255,0,0)
-			gfx.Vollrechteck (x,y, vergroesserung,vergroesserung)
-		}
-		x = (x+vergroesserung) % (28*vergroesserung)  //Neusetzung von x
-		if x == 0 {									//Wenn Zeilenumsprung...
-			y = (y+vergroesserung) 					//...Neusetzung von y
-		} 
-		* */
-	}
-	gfx.TastaturLesen1() //gfx-Bild solange vorhanden, bis beliebige Tastaturtaste gedrückt wird
-	
+
 }
+gfx.TastaturLesen1() //gfx-Bild solange vorhanden, bis beliebige Tastaturtaste gedrückt wird
+}
+
+
+
+	
+	
+	
+
